@@ -1,13 +1,12 @@
 package com.epam.pdp.concurency;
 
-import java.io.File;
-
 import javax.management.AttributeNotFoundException;
 
-import com.epam.pdp.concurency.domain.FileInfo;
 import com.epam.pdp.concurency.service.FileService;
+import com.epam.pdp.concurency.service.SearchService;
 import com.epam.pdp.concurency.service.impl.DefaultFileService;
-import com.epam.pdp.concurency.service.impl.DefaultSearchThreadService;
+import com.epam.pdp.concurency.service.impl.DefaultSearchService;
+import com.epam.pdp.concurency.service.impl.ThreadingSearchService;
 
 public class Searcher {
 
@@ -29,27 +28,13 @@ public class Searcher {
 		}
 		
 		FileService fileService = new DefaultFileService();
-		DefaultSearchThreadService searchThreadService = new DefaultSearchThreadService();
+		SearchService threadingSearchService = new ThreadingSearchService();
+		SearchService searchService = new DefaultSearchService();
 		
 		if (isMulty) {
-			for (File f : fileService.getAllFiles(folderPath)) {
-				FileInfo fileInfo = new FileInfo();
-				
-				fileInfo.setFile(f);
-				fileInfo.setSearchedText(searchedText);
-				
-				searchThreadService.createThread(fileInfo).start();
-			}
+			threadingSearchService.startSearch(fileService.getAllFiles(folderPath), searchedText);
 		} else {
-			for (File f : fileService.getAllFiles(folderPath)) {
-				FileInfo fileInfo = new FileInfo();
-				
-				fileInfo.setFile(f);
-				fileInfo.setSearchedText(searchedText);
-				fileService.search(fileInfo);
-				
-				System.out.println(fileInfo.getFile().getName() + " " + fileInfo.getMatchesCount());
-			}
+			searchService.startSearch(fileService.getAllFiles(folderPath), searchedText);
 		}
 	}
 
